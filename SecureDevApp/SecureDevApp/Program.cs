@@ -60,7 +60,6 @@ namespace SecureDevApp
                         ReadFile();
                         if (fileName != null)
                             Delete();
-                            chosen = true;
                         break;
                     case '5':
                         chosen = true;
@@ -73,9 +72,28 @@ namespace SecureDevApp
         }
         static void Create()
         {
+            int teamNumber = 0;
+            string team;
             Console.Write("Enter File Name: ");
             fileName = Console.ReadLine();
-            File.Create(@"../../" + fileName + ".txt");
+            Console.Write("How many teams?: ");
+            int.TryParse(Console.ReadLine(), out teamNumber);
+            lines = new string[teamNumber];
+            for(int i = 0; i < teamNumber;i++)
+            {
+                int current = i;
+                Console.Write("Enter Team #{0}: ",current++);
+                team = Console.ReadLine();
+                Console.Write("Enter wins: ");
+                int.TryParse(Console.ReadLine(), out current);
+                team += "," + current.ToString();
+                Console.Write("Enter losses: ");
+                int.TryParse(Console.ReadLine(), out current);
+                team += "," + current.ToString();
+                lines[i] = team;
+            }
+
+            File.WriteAllLines(@"../../" + fileName + ".txt", lines);
         }
         static void ReadFile()
         {
@@ -99,6 +117,7 @@ namespace SecureDevApp
                     Console.WriteLine("File Can't be found");
                     lines = null;
                     fileName = null;
+                    Console.ReadKey();
                 }
             }
         }
@@ -128,12 +147,21 @@ namespace SecureDevApp
         static void Display()
         {
             Console.Clear();
+            string[] data;
+            string formatted;
+            string[] table = { "//----------------------------------------------------------------\\", "||                                        ||   Wins   ||  Losses  ||", "||----------------------------------------||----------||----------||", "\\----------------------------------------------------------------//" };
             Console.WriteLine(String.Format("{0," + ((Console.WindowWidth / 2) + fileName.Length / 2) + "}", fileName));
+            Console.WriteLine("{0," + ((Console.WindowWidth / 2) + table[0].Length / 2) + "}",table[0]);
+            Console.WriteLine("{0," + ((Console.WindowWidth / 2) + table[1].Length / 2) + "}", table[1]);
+            Console.WriteLine("{0," + ((Console.WindowWidth / 2) + table[2].Length / 2) + "}", table[2]);
             if (lines != null)
                 foreach (string s in lines)
                 {
-                    Console.WriteLine(s);
+                    data = s.Split(',');
+                    formatted = String.Format("||{0,-40}||{1,10}||{2,10}||", data[0], data[1], data[2]);
+                    Console.WriteLine("{0," + ((Console.WindowWidth / 2) + formatted.Length / 2) + "}",formatted);
                 }
+            Console.WriteLine("{0," + ((Console.WindowWidth / 2) + table[3].Length / 2) + "}", table[3]);
             Console.ReadKey();
         }
     }
