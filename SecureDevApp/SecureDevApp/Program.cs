@@ -12,7 +12,8 @@ namespace SecureDevApp
     {
         public static string fileName;
         public static string[] lines;
-  
+        public static byte[][] keys = new byte[2][];
+
 
         static void Main(string[] args)
         {
@@ -81,7 +82,7 @@ namespace SecureDevApp
         static void FileHandler(string mode)
         {
             AesManaged aesAlg = new AesManaged();
-            byte[][] keys = new byte[2][];
+
             aesAlg.Padding = PaddingMode.Zeros;
 
             switch (mode)
@@ -96,15 +97,29 @@ namespace SecureDevApp
                     File.WriteAllBytes(@"../../" + "key" + fileName, aesAlg.Key);
                     File.WriteAllBytes(@"../../" + "IV" + fileName, aesAlg.IV);
                     fileName = fileName + ".txt";
-                    Console.ReadKey(); 
-                    try
+                    Console.ReadKey();
+
+                    int teamNumber = 0;
+                    string team;
+                    Console.Write("How many teams?: ");
+                    int.TryParse(Console.ReadLine(), out teamNumber);
+                    lines = new string[teamNumber];
+                    for (int i = 0; i < teamNumber; i++)
                     {
-                        EncryptTextToFile("New file", fileName,keys[0], keys[1]);
+                        int current = i;
+                        Console.Write("Enter Team #{0}: ", current++);
+                        team = Console.ReadLine();
+                        Console.Write("Enter wins: ");
+                        int.TryParse(Console.ReadLine(), out current);
+                        team += "," + current.ToString();
+                        Console.Write("Enter losses: ");
+                        int.TryParse(Console.ReadLine(), out current);
+                        team += "," + current.ToString();
+                        lines[i] = team;
                     }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e.Message);
-                    }
+                       string encode = String.Join("[", lines);
+                        EncryptTextToFile(encode, fileName, keys[0], keys[1]);
+                    
                     break;
                 #endregion
                 #region openfile
@@ -126,8 +141,10 @@ namespace SecureDevApp
                         keys[0] = File.ReadAllBytes(@"../../" + "key" + fileName);
                         keys[1] = File.ReadAllBytes(@"../../" + "IV" + fileName);
                         fileName = fileName + ".txt";
-                        test = DecryptTextFromFile(fileName,keys[0], keys[1]);
-                        Console.WriteLine(test);
+                        string decode = DecryptTextFromFile(fileName,keys[0], keys[1]);
+                        lines = decode.Split('[');
+                        foreach(string s in lines)
+                            Console.WriteLine(lines);
                         try
                         {
 
@@ -163,25 +180,40 @@ namespace SecureDevApp
                 int.TryParse(Console.ReadLine(), out lineNumber);
                 lineNumber--;
             }
-            
-            Console.Write("\nCurrent Value : {0}\nEnter new value: ",lines[lineNumber]);
-            lines[lineNumber] = Console.ReadLine();
-            foreach(string s in lines)
-            {
-                //EncryptTextToFile(s, fileName, aesAlg.Key, aesAlg.IV);
-            }
+
+            int current;
+            Console.Write("Enter Team name: ");
+            string team = Console.ReadLine();
+            Console.Write("Enter wins: ");
+            int.TryParse(Console.ReadLine(), out current);
+            team += "," + current.ToString();
+            Console.Write("Enter losses: ");
+            int.TryParse(Console.ReadLine(), out current);
+            team += "," + current.ToString();
+            lines[lineNumber] = team;
+            string encode = String.Join("[", lines);
+            EncryptTextToFile(encode, fileName, keys[0], keys[1]);
             Console.ReadKey();
 
         }
         static void Display()
         {
             Console.Clear();
+            string[] data;
+            string formatted;
+            string[] table = { "//----------------------------------------------------------------\\", "||                                        ||   Wins   ||  Losses  ||", "||----------------------------------------||----------||----------||", "\\----------------------------------------------------------------//" };
             Console.WriteLine(String.Format("{0," + ((Console.WindowWidth / 2) + fileName.Length / 2) + "}", fileName));
+            Console.WriteLine("{0," + ((Console.WindowWidth / 2) + table[0].Length / 2) + "}", table[0]);
+            Console.WriteLine("{0," + ((Console.WindowWidth / 2) + table[1].Length / 2) + "}", table[1]);
+            Console.WriteLine("{0," + ((Console.WindowWidth / 2) + table[2].Length / 2) + "}", table[2]);
             if (lines != null)
                 foreach (string s in lines)
                 {
-                    Console.WriteLine(s);
+                    data = s.Split(',');
+                    formatted = String.Format("||{0,-40}||{1,10}||{2,10}||", data[0], data[1], data[2]);
+                    Console.WriteLine("{0," + ((Console.WindowWidth / 2) + formatted.Length / 2) + "}", formatted);
                 }
+            Console.WriteLine("{0," + ((Console.WindowWidth / 2) + table[3].Length / 2) + "}", table[3]);
             Console.ReadKey();
         }
 
